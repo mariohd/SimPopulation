@@ -1,0 +1,136 @@
+body {
+	font: 14px "Century Gothic", Futura, sans-serif;
+	margin: 20px;
+}
+
+ol, ul {
+	padding-left: 30px;
+}
+
+.board-row:after {
+	clear: both;
+	content: "";
+	display: table;
+}
+
+.board .status div {
+	width: 60px;
+	height: 40px;
+	display: inline-block;
+	margin: 10px 10px 0 0;
+	padding: 2px;
+	border: 1px solid black;
+	text-align: center;
+	line-height: 40px;
+}
+
+.square {
+	background: #fff;
+	border: 1px solid rgba(0, 0, 0, 0.7);
+	float: left;
+	font-size: 15px;
+	font-weight: bold;
+	height: 40px;
+	width: 40px;
+	margin-right: -1px;
+	margin-top: -1px;
+	padding: 0;
+	text-align: center;
+}
+
+.square:hover {
+	transform: scale(1.5, 1.5);
+	z-index: 1;
+	cursor: pointer;
+}
+
+.square .location {
+	display: none;
+	font-size: 10px;
+}
+
+.square:hover .location {
+	display: block;
+}
+
+.square .person {
+	margin: 5px;
+}
+
+.infected {
+	background: rgba(255, 191, 191, 1);
+}
+
+.resistent {
+	background: rgba(255, 255, 191, 1);
+}
+
+.imune {
+	background: rgba(191, 255, 191, 1);
+}
+
+.free {
+	background: rgba(220, 220, 220, 1);
+}
+
+.square:focus {
+	outline: none;
+}
+
+.square .age, .square .location {
+	font-size: 7px;
+	border-top: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.kbd-navigation .square:focus {
+	background: #ddd;
+}
+
+.game {
+	display: flex;
+	flex-direction: row;
+}
+
+.game-info {
+	margin-left: 20px;
+}
+
+/* Tooltip container */
+.tooltip {
+		position: relative;
+		display: inline-block;
+}
+
+.tooltip {
+		position: relative;
+		display: inline-block;
+}
+
+.tooltip .tooltiptext {
+		visibility: hidden;
+		width: 100px;
+		background-color: rgba(255, 255, 255, 1);
+		border: 1px solid rgba(200, 200, 200, 1);
+		color: black;
+		text-align: center;
+		border-radius: 6px;
+		padding: 5px 0;
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		left: 110%;
+}
+
+.tooltip .tooltiptext::after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		right: 100%;
+		margin-top: -5px;
+		border-width: 5px;
+		border-style: solid;
+		border-color: transparent rgba(200, 200, 200, 1) transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+		visibility: visible;
+}
