@@ -5,7 +5,7 @@ import './index.css';
 class Square extends React.Component {
 	render() {
 		return (
-			<div className={'square tooltip ' + this.props.person.class} >
+			<div className={'square tooltip ' + this.props.person.class} onClick={this.props.onClick}>
 				<div className='person'>{this.props.person.health}</div>
 				<div className='age' >
 					{`${this.props.person.age}`}
@@ -60,7 +60,9 @@ class Board extends React.Component {
 	}
 
 	percentage(a) {
-	    return Math.round((a / Math.pow(this.props.size, 2)) * 100) + '%';
+		if (a)
+	    	return Math.round((a / Math.pow(this.props.size, 2)) * 100) + '%';
+	    return '0%';
 	}
 
 	render() {
@@ -83,25 +85,25 @@ class Board extends React.Component {
 				{rows}
 				<div className='status'>
 					<div className='tooltip'>
-						{ `H: ${values.H} `}
+						{ `H: ${values.H? values.H : 0} `}
 						<span className='tooltiptext'>
 							{`Healthy: ${this.percentage(values.H)}` }
 						</span>
 					</div>
 					<div className='resistent tooltip'>
-						{ `R: ${values.R} `}
+						{ `R: ${values.R? values.R : 0} `}
 						<span className='tooltiptext'>
 							{`Resistent: ${this.percentage(values.R)}` }
 						</span>
 					</div>
 					<div className='imune tooltip'>
-						{ `I: ${values.I} `}
+						{ `I: ${ values.I? values.I : 0 } `}
 						<span className='tooltiptext'>
 							{`Imune: ${this.percentage(values.I)}` }
 						</span>
 					</div>
 					<div className='infected tooltip'>
-						{ `S: ${values.S} `}
+						{ `S: ${values.S? values.S : 0} `}
 						<span className='tooltiptext'>
 							{`Sick: ${this.percentage(values.S)}` }
 						</span>
@@ -116,7 +118,7 @@ class Game extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			size: 20
+			size: 6
 		}
 	}
 
