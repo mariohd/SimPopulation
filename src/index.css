@@ -40,7 +40,7 @@ ol, ul {
 
 .square:hover {
 	transform: scale(1.5, 1.5);
-	z-index: 1;
+	z-index: 2;
 	cursor: pointer;
 }
 
@@ -55,6 +55,11 @@ ol, ul {
 
 .square .person {
 	margin: 5px;
+}
+
+.born {
+	border: 1px dashed;
+	z-index: 1;
 }
 
 .infected {

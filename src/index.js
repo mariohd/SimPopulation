@@ -30,7 +30,9 @@ class Board extends React.Component {
 		population[line][col] = infected(line, col);
 
 		this.state = {
-			population
+			population,
+			turn: 1,
+			history: []
 		}
 	}
 
@@ -42,6 +44,10 @@ class Board extends React.Component {
 	}
 
 	spreadInfection() {
+		let healthy = 0, resistent  = 0, 
+			imune = 0, sick = 0, infection = 0, 
+			accidents = 0, birth = 0,
+			dead = 0;
 		let infect = (line, col) => {
 			if (line < 0 || col < 0 ||
 				line >= this.props.size || col >= this.props.size) {
@@ -51,6 +57,10 @@ class Board extends React.Component {
 			let population = this.state.population;
 			if (population[line][col].health === 'H') {
 				population[line][col] = infected(line, col);
+				infection++;
+				this.setState({
+					population
+				});
 			}
 
 			if (population[line][col].health === 'R') {
@@ -58,11 +68,12 @@ class Board extends React.Component {
 
 				if (odds > 0.3) {
 					population[line][col] = infected(line, col);
+					infection++;
+					this.setState({
+						population
+					});
 				}
 			}
-			this.setState({
-				population
-			});
 		}
 
 		let infectOthers = (line, col) => {
@@ -72,12 +83,36 @@ class Board extends React.Component {
 			infect(line - 1, col);
 		}
 
+		let getMomentInHistory = () => {
+			let population = this.state.population;
+			population.forEach((row, line) => {
+				row.forEach((element, col) => {
+					switch(element.health) {
+						case 'H':
+							healthy ++;
+							break;
+						case 'R':
+							resistent ++;
+							break;
+						case 'I':
+							imune ++;
+							break;
+						case '\u2020':
+							break;
+						default:
+							sick ++;
+						}
+				});
+			});
+		}
+
 		let addAge = () => {
 			let population = this.state.population;
 			population.forEach((row, line) => {
 				row.forEach((element, col) => {
 					element.age ++;
-				})
+					element.class = element.class.replace('born', '');	
+				});
 			});
 
 			this.setState({
@@ -94,28 +129,59 @@ class Board extends React.Component {
 					// accidents may happen to us all
 					if (odds < 0.1) {
 						population[line][col] = vacancy(line, col);
+						accidents++;
 					}
 
-					// Healthy dies after 10 turns
-					if (element.age > 10 && element.health === 'H') {
+					// Healthy/Imune dies after 10 turns
+					if (element.age > 10 && (element.health === 'H' || element.health === 'I')) {
 						population[line][col] = vacancy(line, col);
+						dead++;
 					}
 
 					// Infected dies after 3 turns
 					if (element.age > 3 && element.health === 'S') {
 						population[line][col] = vacancy(line, col);
+						dead++;
 					}
 
-					// Resistant dies after 15 turns
-					if (element.age > 15 && element.health === 'R') {
+					// Resistant dies after 4 turns
+					if (element.age > 4 && element.health === 'R') {
 						population[line][col] = vacancy(line, col);
+						dead++;
 					}
 				})
+			});
+
+			this.setState({
+				population
+			});
+		}
+
+		let fillBornChildren = () => {
+			let population = this.state.population;
+			population.forEach((row, line) => {
+				row.forEach((element, col) => {
+					if (element.health !== '\u2020') {
+						return;
+					}
+					let odds = Math.random();
+					if (odds < 0.80) {
+						let person = newBorn(line, col);
+						person.class += ' born'
+						population[line][col] = person;
+						birth++;
+					}
+				})
+			});
+
+			this.setState({
+				population
 			});
 		}
 
 		addAge();
 		kill();
+		fillBornChildren();
 
 		let infecteds = [];
 		this.state.population.forEach((row, line) => {
@@ -126,6 +192,26 @@ class Board extends React.Component {
 
 		infecteds.forEach((element) => {
 			infectOthers(element.line, element.col);
+		});
+
+		getMomentInHistory();
+
+		let history = this.state.history;
+		history.push({
+			turn: this.state.turn,
+			imune,
+			resistent,
+			infection,
+			sick,
+			accidents,
+			healthy,
+			birth,
+			dead
+		});
+
+		this.setState({
+			turn: this.state.turn + 1,
+			history
 		});
 	}
 
@@ -161,7 +247,7 @@ class Board extends React.Component {
 				values[element.health] += 1;
 			});
 		});
-
+		console.log(this.state.history);
 		return (
 			<div className='board'>
 				<button className="nextTurn" onClick={() => this.spreadInfection()}>Next Turn</button>
@@ -192,9 +278,9 @@ class Board extends React.Component {
 						</span>
 					</div>
 					<div className='free tooltip'>
-						{ `V: ${values.V? values.V : 0} `}
+						{ `\u2020: ${values['\u2020']? values['\u2020'] : 0} `}
 						<span className='tooltiptext'>
-							{`Vacancy: ${this.percentage(values.V)}` }
+							{`Vacancy: ${this.percentage(values['\u2020'])}` }
 						</span>
 					</div>
 				</div>
@@ -239,7 +325,7 @@ function infected(line, col) {
 
 function vacancy(line, col) {
 	return Object.assign({},{
-		health: 'V',
+		health: '\u2020',
 		class: 'free',
 		age: Number.POSITIVE_INFINITY,
 		line,
@@ -249,6 +335,31 @@ function vacancy(line, col) {
 
 function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function newBorn(line, col) {
+	const RESISTENT = {
+		health: 'R',
+		class: 'resistent',
+		age: 1,
+		line,
+		col
+	};
+	const IMUNE = {
+		health: 'I',
+		class: 'imune',
+		age: 1,
+		line,
+		col
+	};
+
+	let chances = Math.random();
+	switch (true) {
+		case (0.85 > chances):
+			return Object.assign({}, RESISTENT);
+		default:
+			return Object.assign({}, IMUNE);
+	}
 }
 
 function oneOf(line, col) {
