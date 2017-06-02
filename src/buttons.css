@@ -1,0 +1,29 @@
+button.action {
+  display: inline-block;
+  margin: 0 10px 0 0;
+  padding: 5px 20px;
+  font-size: 15px;
+  font-family: "Bitter",serif;
+  line-height: 1.8;
+  appearance: none;
+  box-shadow: none;
+}
+
+button.action {
+  color: #fff;
+  background-color: #6496c8;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 3px #27496d;
+  outline: none;
+}
+
+button.action:hover {
+  background-color: #417cb8
+}
+
+button.action:active {
+  background-color: #417cb8;
+  box-shadow: 0 1px #27496d;
+  transform: translateY(5px);
+}

@@ -4,16 +4,21 @@ import Square from './square.js';
 class Board extends React.Component {
 	constructor(props) {
 		super(props);
-		let population = Array(this.props.size)
+		this.state = this.getInitialState();
+	}
+
+	getInitialState(size = this.props.size) {
+		let population = Array(size)
 							.fill(null)
-							.map(() => Array(this.props.size).fill(null));
+							.map(() => Array(size).fill(null));
 		population = population.map((e, l) => e.map((e2, c) => oneOf(l, c)));
-		let line = getRandomInt(0, this.props.size - 1);
-		let col = getRandomInt(0, this.props.size - 1);
+		let line = getRandomInt(0, size - 1);
+		let col = getRandomInt(0, size - 1);
 		population[line][col] = infected(line, col);
 
-		this.state = {
+		return {
 			population,
+			size,
 			turn: 1,
 			history: []
 		}
@@ -27,13 +32,18 @@ class Board extends React.Component {
 	}
 
 	spreadInfection() {
-		let healthy = 0, resistent  = 0, 
-			imune = 0, sick = 0, infection = 0, 
-			accidents = 0, birth = 0,
+		let healthy = 0, 
+			resistent  = 0, 
+			imune = 0, 
+			sick = 0, 
+			infection = 0, 
+			accidents = 0, 
+			birth = 0,
 			dead = 0;
+
 		let infect = (line, col) => {
 			if (line < 0 || col < 0 ||
-				line >= this.props.size || col >= this.props.size) {
+				line >= this.state.size || col >= this.state.size) {
 				return;
 			}
 
@@ -200,7 +210,7 @@ class Board extends React.Component {
 
 	createRow(number) {
 		let cols = [];
-		for (let i = 0; i < this.props.size; i++) {
+		for (let i = 0; i < this.state.size; i++) {
 			cols.push(this.renderSquare(number, i));
 		}
 		return (
@@ -212,13 +222,19 @@ class Board extends React.Component {
 
 	percentage(a) {
 		if (a)
-			return Math.round((a / Math.pow(this.props.size, 2)) * 100) + '%';
+			return Math.round((a / Math.pow(this.state.size, 2)) * 100) + '%';
 		return '0%';
+	}
+
+	changeSize(event) {
+		let size = parseInt(event.currentTarget.value, 10);
+		let state = this.getInitialState(size || 1);
+		this.setState(state);
 	}
 
 	render() {
 		let rows = [];
-		for (let y = 0; y < this.props.size; y++) {
+		for (let y = 0; y < this.state.size; y++) {
 			rows.push(this.createRow(y));
 		}
 		let values = {};
@@ -230,43 +246,50 @@ class Board extends React.Component {
 				values[element.health] += 1;
 			});
 		});
-		console.log(this.state.history);
 		return (
 			<div className='board'>
-				<button className="nextTurn" onClick={() => this.spreadInfection()}>Next Turn</button>
-				{rows}
-				<div className='status'>
-					<div className='tooltip'>
-						{ `H: ${values.H? values.H : 0} `}
-						<span className='tooltiptext'>
-							{`Healthy: ${this.percentage(values.H)}` }
-						</span>
+				<div className="population">{rows}</div>
+				<span className="panel">
+					<div className="commands perspective">
+						<h2>Commands</h2>
+						Size: <input className="action" type="number" min={1} onBlur={this.changeSize.bind(this)}></input>
+						<button className="action" onClick={ () => this.spreadInfection() }>Next Turn</button>
+						<button className="action" onClick={() => this.setState(this.getInitialState()) }>Reset</button>
 					</div>
-					<div className='resistent tooltip'>
-						{ `R: ${values.R? values.R : 0} `}
-						<span className='tooltiptext'>
-							{`Resistent: ${this.percentage(values.R)}` }
-						</span>
+					<div className='status'>
+						<h2>Status</h2>
+						<div className='tooltip statistics'>
+							{ `H: ${values.H? values.H : 0} `}
+							<span className='tooltiptext'>
+								{`Healthy: ${this.percentage(values.H)}` }
+							</span>
+						</div>
+						<div className='resistent tooltip statistics'>
+							{ `R: ${values.R? values.R : 0} `}
+							<span className='tooltiptext'>
+								{`Resistent: ${this.percentage(values.R)}` }
+							</span>
+						</div>
+						<div className='imune tooltip statistics'>
+							{ `I: ${ values.I? values.I : 0 } `}
+							<span className='tooltiptext'>
+								{`Imune: ${this.percentage(values.I)}` }
+							</span>
+						</div>
+						<div className='infected tooltip statistics'>
+							{ `S: ${values.S? values.S : 0} `}
+							<span className='tooltiptext'>
+								{`Sick: ${this.percentage(values.S)}` }
+							</span>
+						</div>
+						<div className='free tooltip statistics'>
+							{ `\u2020: ${values['\u2020']? values['\u2020'] : 0} `}
+							<span className='tooltiptext'>
+								{`Vacancy: ${this.percentage(values['\u2020'])}` }
+							</span>
+						</div>
 					</div>
-					<div className='imune tooltip'>
-						{ `I: ${ values.I? values.I : 0 } `}
-						<span className='tooltiptext'>
-							{`Imune: ${this.percentage(values.I)}` }
-						</span>
-					</div>
-					<div className='infected tooltip'>
-						{ `S: ${values.S? values.S : 0} `}
-						<span className='tooltiptext'>
-							{`Sick: ${this.percentage(values.S)}` }
-						</span>
-					</div>
-					<div className='free tooltip'>
-						{ `\u2020: ${values['\u2020']? values['\u2020'] : 0} `}
-						<span className='tooltiptext'>
-							{`Vacancy: ${this.percentage(values['\u2020'])}` }
-						</span>
-					</div>
-				</div>
+				</span>
 			</div>
 		);
 	}

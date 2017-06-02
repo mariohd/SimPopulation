@@ -7,21 +7,14 @@ ol, ul {
 	padding-left: 30px;
 }
 
+.action {
+	margin-right: 20px;
+}
+
 .board-row:after {
 	clear: both;
 	content: "";
 	display: table;
-}
-
-.board .status div {
-	width: 60px;
-	height: 40px;
-	display: inline-block;
-	margin: 10px 10px 0 0;
-	padding: 2px;
-	border: 1px solid black;
-	text-align: center;
-	line-height: 40px;
 }
 
 .square {
@@ -100,42 +93,60 @@ ol, ul {
 	margin-left: 20px;
 }
 
-/* Tooltip container */
-.tooltip {
-		position: relative;
-		display: inline-block;
+.population, .panel {
+	display: inline-block;
+	vertical-align: top;
+	margin-right: 15px;
+}
+
+.panel .status {
+
+}
+
+.panel .status .statistics {
+	display: inline-block;
+	margin: 0 10px 0 0;
+	padding: 5px 25px;
+	border: 1px solid black;
+	text-align: center;
+	line-height: 40px;
 }
 
 .tooltip {
-		position: relative;
-		display: inline-block;
+	position: relative;
+	display: inline-block;
+}
+
+.tooltip {
+	position: relative;
+	display: inline-block;
 }
 
 .tooltip .tooltiptext {
-		visibility: hidden;
-		width: 100px;
-		background-color: rgba(255, 255, 255, 1);
-		border: 1px solid rgba(200, 200, 200, 1);
-		color: black;
-		text-align: center;
-		border-radius: 6px;
-		padding: 5px 0;
-		position: absolute;
-		z-index: 1;
-		top: 0;
-		left: 110%;
+	visibility: hidden;
+	width: 100px;
+	background-color: rgba(255, 255, 255, 1);
+	border: 1px solid rgba(200, 200, 200, 1);
+	color: black;
+	text-align: center;
+	border-radius: 6px;
+	padding: 5px 0;
+	position: absolute;
+	z-index: 1;
+	top: 0;
+	left: 110%;
 }
 
 .tooltip .tooltiptext::after {
-		content: "";
-		position: absolute;
-		top: 50%;
-		right: 100%;
-		margin-top: -5px;
-		border-width: 5px;
-		border-style: solid;
-		border-color: transparent rgba(200, 200, 200, 1) transparent transparent;
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 100%;
+	margin-top: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent rgba(200, 200, 200, 1) transparent transparent;
 }
 .tooltip:hover .tooltiptext {
-		visibility: visible;
+	visibility: visible;
 }
