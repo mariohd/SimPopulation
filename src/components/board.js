@@ -1,5 +1,8 @@
 import React from 'react';
 import Square from './square.js';
+import Status from './status.js';
+import {INFECTED, RESISTENT, IMUNE, DEAD, HEALTHY } from '../models/people.js';
+import { randomInt } from '../utils.js';
 
 class Board extends React.Component {
 	constructor(props) {
@@ -12,9 +15,9 @@ class Board extends React.Component {
 							.fill(null)
 							.map(() => Array(size).fill(null));
 		population = population.map((e, l) => e.map((e2, c) => oneOf(l, c)));
-		let line = getRandomInt(0, size - 1);
-		let col = getRandomInt(0, size - 1);
-		population[line][col] = infected(line, col);
+		let line = randomInt(0, size - 1);
+		let col = randomInt(0, size - 1);
+		population[line][col] = newInfected(line, col);
 
 		return {
 			population,
@@ -49,7 +52,7 @@ class Board extends React.Component {
 
 			let population = this.state.population;
 			if (population[line][col].health === 'H') {
-				population[line][col] = infected(line, col);
+				population[line][col] = newInfected(line, col);
 				infection++;
 				this.setState({
 					population
@@ -60,7 +63,7 @@ class Board extends React.Component {
 				let odds = Math.random();
 
 				if (odds > 0.3) {
-					population[line][col] = infected(line, col);
+					population[line][col] = newInfected(line, col);
 					infection++;
 					this.setState({
 						population
@@ -104,7 +107,7 @@ class Board extends React.Component {
 			population.forEach((row, line) => {
 				row.forEach((element, col) => {
 					element.age ++;
-					element.class = element.class.replace('born', '');	
+					element.name = element.name.replace('born', '');	
 				});
 			});
 
@@ -131,7 +134,7 @@ class Board extends React.Component {
 						dead++;
 					}
 
-					// Infected dies after 3 turns
+					// newInfected dies after 3 turns
 					if (element.age > 3 && element.health === 'S') {
 						population[line][col] = vacancy(line, col);
 						dead++;
@@ -160,7 +163,7 @@ class Board extends React.Component {
 					let odds = Math.random();
 					if (odds < 0.80) {
 						let person = newBorn(line, col);
-						person.class += ' born'
+						person.name += ' born'
 						population[line][col] = person;
 						birth++;
 					}
@@ -176,14 +179,14 @@ class Board extends React.Component {
 		kill();
 		fillBornChildren();
 
-		let infecteds = [];
+		let newInfecteds = [];
 		this.state.population.forEach((row, line) => {
-			infecteds = infecteds.concat(row.filter((element, col) => {
+			newInfecteds = newInfecteds.concat(row.filter((element, col) => {
 				return element.health === 'S';
 			}));
 		});
 
-		infecteds.forEach((element) => {
+		newInfecteds.forEach((element) => {
 			infectOthers(element.line, element.col);
 		});
 
@@ -220,12 +223,6 @@ class Board extends React.Component {
 		);
 	}
 
-	percentage(a) {
-		if (a)
-			return Math.round((a / Math.pow(this.state.size, 2)) * 100) + '%';
-		return '0%';
-	}
-
 	changeSize(event) {
 		let size = parseInt(event.currentTarget.value, 10);
 		let state = this.getInitialState(size || 1);
@@ -237,15 +234,18 @@ class Board extends React.Component {
 		for (let y = 0; y < this.state.size; y++) {
 			rows.push(this.createRow(y));
 		}
-		let values = {};
+
+		let types = {};
 		this.state.population.forEach((line) => {
 			line.forEach((element) => {
-				if (! values[element.health]) {
-					values[element.health] = 0;
+				types[element.health] = {
+					abbr: element.health,
+					name: element.name,
+					value: (types[element.health]? types[element.health].value : 0) + 1
 				}
-				values[element.health] += 1;
 			});
 		});
+
 		return (
 			<div className='board'>
 				<div className="population">{rows}</div>
@@ -254,127 +254,42 @@ class Board extends React.Component {
 						<h2>Commands</h2>
 						Size: <input className="action" type="number" min={1} onBlur={this.changeSize.bind(this)}></input>
 						<button className="action" onClick={ () => this.spreadInfection() }>Next Turn</button>
-						<button className="action" onClick={() => this.setState(this.getInitialState()) }>Reset</button>
+						<button className="action" onClick={() => this.setState(this.getInitialState(this.state.size)) }>Reset</button>
 					</div>
-					<div className='status'>
-						<h2>Status</h2>
-						<div className='tooltip statistics'>
-							{ `H: ${values.H? values.H : 0} `}
-							<span className='tooltiptext'>
-								{`Healthy: ${this.percentage(values.H)}` }
-							</span>
-						</div>
-						<div className='resistent tooltip statistics'>
-							{ `R: ${values.R? values.R : 0} `}
-							<span className='tooltiptext'>
-								{`Resistent: ${this.percentage(values.R)}` }
-							</span>
-						</div>
-						<div className='imune tooltip statistics'>
-							{ `I: ${ values.I? values.I : 0 } `}
-							<span className='tooltiptext'>
-								{`Imune: ${this.percentage(values.I)}` }
-							</span>
-						</div>
-						<div className='infected tooltip statistics'>
-							{ `S: ${values.S? values.S : 0} `}
-							<span className='tooltiptext'>
-								{`Sick: ${this.percentage(values.S)}` }
-							</span>
-						</div>
-						<div className='free tooltip statistics'>
-							{ `\u2020: ${values['\u2020']? values['\u2020'] : 0} `}
-							<span className='tooltiptext'>
-								{`Vacancy: ${this.percentage(values['\u2020'])}` }
-							</span>
-						</div>
-					</div>
+					<Status types={types} total={Math.pow(this.state.size, 2)}/>
 				</span>
 			</div>
 		);
 	}
 }
 
-function infected(line, col) {
-	return Object.assign({},{
-		health: 'S',
-		class: 'infected',
-		age: 1,
-		line,
-		col
-	});
+function newInfected(line, col) {
+	return Object.assign({line, col}, INFECTED);
 }
 
 function vacancy(line, col) {
-	return Object.assign({},{
-		health: '\u2020',
-		class: 'free',
-		age: Number.POSITIVE_INFINITY,
-		line,
-		col
-	});
-}
-
-function getRandomInt(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
+	return Object.assign({line, col}, DEAD);
 }
 
 function newBorn(line, col) {
-	const RESISTENT = {
-		health: 'R',
-		class: 'resistent',
-		age: 1,
-		line,
-		col
-	};
-	const IMUNE = {
-		health: 'I',
-		class: 'imune',
-		age: 1,
-		line,
-		col
-	};
-
-	let chances = Math.random();
+	let odds = Math.random();
 	switch (true) {
-		case (0.85 > chances):
-			return Object.assign({}, RESISTENT);
+		case (0.85 > odds):
+			return Object.assign({line, col}, RESISTENT);
 		default:
-			return Object.assign({}, IMUNE);
+			return Object.assign({line, col}, IMUNE);
 	}
 }
 
 function oneOf(line, col) {
-	const HEALTHY = {
-		health: 'H',
-		class: 'healthy',
-		age: 1,
-		line,
-		col
-	};
-	const RESISTENT = {
-		health: 'R',
-		class: 'resistent',
-		age: 1,
-		line,
-		col
-	};
-	const IMUNE = {
-		health: 'I',
-		class: 'imune',
-		age: 1,
-		line,
-		col
-	};
-
-	let chances = Math.random();
+	let odds = Math.random();
 	switch (true) {
-		case (0.85 > chances):
-			return Object.assign({}, HEALTHY);
-		case (chances > 0.85 && chances < 0.95):
-			return Object.assign({}, RESISTENT);
+		case (0.85 > odds):
+			return Object.assign({line, col}, HEALTHY);
+		case (odds > 0.85 && odds < 0.95):
+			return Object.assign({line, col}, RESISTENT);
 		default:
-			return Object.assign({}, IMUNE);
+			return Object.assign({line, col}, IMUNE);
 	}
 }
 
