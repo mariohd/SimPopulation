@@ -175,9 +175,36 @@ class Board extends React.Component {
 			});
 		}
 
+		let walk = (infected) => {
+			let changePlaces = (one, two) => {
+				let population = this.state.population;
+				let backup = population[two.line][two.col];
+				population[two.line][two.col] = one;
+				population[one.line][one.col] = backup;
+			}
+
+			let population = this.state.population;
+			let odds = Math.random();
+			switch(true) {
+				case (0.25 > odds && (infected.line - 1 >= 0)):
+					changePlaces(infected, population[infected.line - 1][infected.col]);
+					break; 
+				case (0.50 > odds && (infected.line + 1 < this.state.size)):
+					changePlaces(infected, population[infected.line + 1][infected.col]);
+					break;
+				case (0.75 > odds && (infected.col - 1 >= 0)):
+					changePlaces(infected, population[infected.line][infected.col - 1]);
+					break;
+				default:
+					if (infected.col + 1 < this.state.size)
+						changePlaces(infected, population[infected.line][infected.col + 1]);
+					else
+						walk(infected);
+					break;
+			}
+		}
+
 		addAge();
-		kill();
-		fillBornChildren();
 
 		let newInfecteds = [];
 		this.state.population.forEach((row, line) => {
@@ -188,7 +215,11 @@ class Board extends React.Component {
 
 		newInfecteds.forEach((element) => {
 			infectOthers(element.line, element.col);
+			walk(element);
 		});
+
+		kill();
+		fillBornChildren();
 
 		getMomentInHistory();
 
@@ -204,6 +235,8 @@ class Board extends React.Component {
 			birth,
 			dead
 		});
+
+		console.log(history);
 
 		this.setState({
 			turn: this.state.turn + 1,
@@ -264,20 +297,20 @@ class Board extends React.Component {
 }
 
 function newInfected(line, col) {
-	return Object.assign({line, col}, INFECTED);
+	return Object.assign({line, col, birthPlace: {line, col}}, INFECTED);
 }
 
 function vacancy(line, col) {
-	return Object.assign({line, col}, DEAD);
+	return Object.assign({line, col, birthPlace: {line, col}}, DEAD);
 }
 
 function newBorn(line, col) {
 	let odds = Math.random();
 	switch (true) {
-		case (0.85 > odds):
-			return Object.assign({line, col}, RESISTENT);
+		case (0.6 > odds):
+			return Object.assign({line, col, birthPlace: {line, col}}, RESISTENT);
 		default:
-			return Object.assign({line, col}, IMUNE);
+			return Object.assign({line, col, birthPlace: {line, col}}, IMUNE);
 	}
 }
 
@@ -285,11 +318,11 @@ function oneOf(line, col) {
 	let odds = Math.random();
 	switch (true) {
 		case (0.85 > odds):
-			return Object.assign({line, col}, HEALTHY);
+			return Object.assign({line, col, birthPlace: {line, col}}, HEALTHY);
 		case (odds > 0.85 && odds < 0.95):
-			return Object.assign({line, col}, RESISTENT);
+			return Object.assign({line, col, birthPlace: {line, col}}, RESISTENT);
 		default:
-			return Object.assign({line, col}, IMUNE);
+			return Object.assign({line, col, birthPlace: {line, col}}, IMUNE);
 	}
 }
 
