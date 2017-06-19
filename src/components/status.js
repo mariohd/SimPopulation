@@ -36,6 +36,7 @@ class Status extends React.Component {
 		return (
 			<div className='status'>
 				<h2>Status</h2>
+				<h3>Turn: {this.props.turn }</h3>
 				{ squareTypes }
 			</div>
 		);

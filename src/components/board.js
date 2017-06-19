@@ -1,6 +1,7 @@
 import React from 'react';
 import Square from './square.js';
 import Status from './status.js';
+import Statistics from './statistics.js';
 import {INFECTED, RESISTENT, IMUNE, DEAD, HEALTHY } from '../models/people.js';
 import { randomInt } from '../utils.js';
 
@@ -236,8 +237,6 @@ class Board extends React.Component {
 			dead
 		});
 
-		console.log(history);
-
 		this.setState({
 			turn: this.state.turn + 1,
 			history
@@ -258,7 +257,7 @@ class Board extends React.Component {
 
 	changeSize(event) {
 		let size = parseInt(event.currentTarget.value, 10);
-		let state = this.getInitialState(size || 1);
+		let state = this.getInitialState(size || 5);
 		this.setState(state);
 	}
 
@@ -289,7 +288,8 @@ class Board extends React.Component {
 						<button className="action" onClick={ () => this.spreadInfection() }>Next Turn</button>
 						<button className="action" onClick={() => this.setState(this.getInitialState(this.state.size)) }>Reset</button>
 					</div>
-					<Status types={types} total={Math.pow(this.state.size, 2)}/>
+					<Status types={types} total={Math.pow(this.state.size, 2)} turn={this.state.turn }/>
+					<Statistics data={this.state.history } />
 				</span>
 			</div>
 		);
@@ -307,7 +307,7 @@ function vacancy(line, col) {
 function newBorn(line, col) {
 	let odds = Math.random();
 	switch (true) {
-		case (0.6 > odds):
+		case (0.5 > odds):
 			return Object.assign({line, col, birthPlace: {line, col}}, RESISTENT);
 		default:
 			return Object.assign({line, col, birthPlace: {line, col}}, IMUNE);
